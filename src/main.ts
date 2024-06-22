@@ -50,17 +50,21 @@ async function run() {
           .pop() || "";
     }
 
+    const isPreRelease = targetPrefix === "pre-rel-v";
+
     console.log(`version=${targetVersion}`);
     console.log(`version-ext=${targetVersion + targetSuffix}`);
     console.log(`version-full=${targetPrefix + targetVersion + targetSuffix}`);
     console.log(`version-prefix=${targetPrefix}`);
     console.log(`version-suffix=${targetSuffix}`);
+    console.log(`prerelease=${isPreRelease}`);
 
     core.setOutput("version", targetVersion);
     core.setOutput("version-ext", targetVersion + targetSuffix);
     core.setOutput("version-full", targetPrefix + targetVersion + targetSuffix);
     core.setOutput("version-prefix", targetPrefix);
     core.setOutput("version-suffix", targetSuffix);
+    core.setOutput("prerelease", isPreRelease);
   } catch (error) {
     core.setFailed(`${error}`);
   }
