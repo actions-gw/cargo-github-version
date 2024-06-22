@@ -40,16 +40,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+function extractSemver(ref) {
+    const semverRegex = /v?(\d+\.\d+\.\d+)/;
+    const match = ref.match(semverRegex);
+    return match ? match[1] : null;
+}
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const prefix = core.getInput("prefix");
             const suffix = core.getInput("suffix");
-            const targetVersion = "1.2.3";
-            core.setOutput("version", targetVersion);
-            core.setOutput("version-ext", targetVersion + suffix);
-            core.setOutput("version-full", prefix + targetVersion + suffix);
-            console.log(`Version: ${targetVersion}`);
+            // extract version from github ref
+            // refs/tags/v1.2.3
+            const version = extractSemver(process.env.GITHUB_REF);
+            if (!version) {
+                throw new Error(`Failed to extract version from GITHUB_REF: ${process.env.GITHUB_REF}`);
+            }
+            console.log(`version=${version}`);
+            console.log(`version-ext=${version + suffix}`);
+            console.log(`version-full=${prefix + version + suffix}`);
+            core.setOutput("version", version);
+            core.setOutput("version-ext", version + suffix);
+            core.setOutput("version-full", prefix + version + suffix);
         }
         catch (error) {
             core.setFailed(`${error}`);
