@@ -68,13 +68,12 @@ function run() {
             const prefix = core.getInput("prefix");
             const suffix = core.getInput("suffix");
             // extract version from github ref
-            // refs/tags/v1.2.3
             const versionFromRef = extractSemver(process.env.GITHUB_REF);
             const versionFromCargoToml = extractFromCargoToml();
             if (versionFromRef && versionFromRef !== versionFromCargoToml) {
                 throw new Error(`Version extracted from GITHUB_REF: ${versionFromRef} and Cargo.toml: ${versionFromCargoToml} are different`);
             }
-            let targetVersion = versionFromCargoToml;
+            const targetVersion = versionFromCargoToml;
             let targetSuffix = suffix;
             let targetPrefix = prefix;
             if (versionFromRef) {
@@ -87,9 +86,13 @@ function run() {
             console.log(`version=${targetVersion}`);
             console.log(`version-ext=${targetVersion + targetSuffix}`);
             console.log(`version-full=${targetPrefix + targetVersion + targetSuffix}`);
+            console.log(`version-prefix=${targetPrefix}`);
+            console.log(`version-suffix=${targetSuffix}`);
             core.setOutput("version", targetVersion);
             core.setOutput("version-ext", targetVersion + targetSuffix);
             core.setOutput("version-full", targetPrefix + targetVersion + targetSuffix);
+            core.setOutput("version-prefix", targetPrefix);
+            core.setOutput("version-suffix", targetSuffix);
         }
         catch (error) {
             core.setFailed(`${error}`);

@@ -31,9 +31,6 @@ async function run() {
     const suffix = core.getInput("suffix");
 
     // extract version from github ref
-
-    // refs/tags/v1.2.3
-
     const versionFromRef = extractSemver(process.env.GITHUB_REF);
     const versionFromCargoToml = extractFromCargoToml();
     if (versionFromRef && versionFromRef !== versionFromCargoToml) {
@@ -42,7 +39,7 @@ async function run() {
       );
     }
 
-    let targetVersion = versionFromCargoToml;
+    const targetVersion = versionFromCargoToml;
     let targetSuffix = suffix;
     let targetPrefix = prefix;
     if (versionFromRef) {
