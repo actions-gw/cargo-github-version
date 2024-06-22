@@ -4,10 +4,10 @@ author: 'scx1332'
 inputs:
   suffix:
     description: 'Default suffix to add to the version if tag not found'
-    default: 'nightly'
+    default: '-nightly'
   prefix:
     description: 'Default prefix to add to the version if tag not found'
-    default: 'v'
+    default: 'pre-rel-v'
 outputs:
   version:
     description: 'Pure version string'
@@ -15,6 +15,10 @@ outputs:
     description: 'Version string and suffix'
   version-full:
     description: 'Version string with prefix and suffix'
+  version-prefix:
+    description: 'Version prefix'
+  version-suffix:
+    description: 'Version suffix'
 runs:
   using: 'node20'
   main: 'dist/index.js'
