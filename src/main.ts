@@ -1,14 +1,15 @@
 import * as core from "@actions/core";
-import * as installer from "./installer";
 
 async function run() {
   try {
-    const version = core.getInput("version");
-    const includePreReleases = convertToBoolean(
-      core.getInput("include-pre-releases"),
-    );
-    const repoToken = core.getInput("repo-token");
-    await installer.getProtoc(version, includePreReleases, repoToken);
+    const prefix = core.getInput("prefix");
+    const suffix = core.getInput("suffix");
+
+    const targetVersion = "1.2.3";
+    core.setOutput("version", targetVersion);
+    core.setOutput("version-ext", targetVersion + suffix);
+    core.setOutput("version-full", prefix + targetVersion + suffix);
+
   } catch (error) {
     core.setFailed(`${error}`);
   }
