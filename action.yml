@@ -1,0 +1,23 @@
+name: 'Cargo github version'
+description: 'Gets version from github tag push or from cargo.toml'
+author: 'scx1332'
+inputs:
+  suffix:
+    description: 'Default suffix to add to the version if tag not found'
+    default: 'nightly'
+  prefix:
+    description: 'Default prefix to add to the version if tag not found'
+    default: 'v'
+outputs:
+  version:
+    description: 'Pure version string'
+  version-ext:
+    description: 'Version string and suffix'
+  version-full:
+    description: 'Version string with prefix and suffix'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+branding:
+  icon: 'box'
+  color: 'green'
