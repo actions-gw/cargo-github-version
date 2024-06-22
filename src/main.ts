@@ -8,6 +8,23 @@ function extractSemver(ref) {
   return match ? match[1] : null;
 }
 
+function extractFromCargoToml() {
+  const path = process.env.GITHUB_WORKSPACE + "/Cargo.toml";
+  const cargoTomlData = readFileSync(path, "utf8");
+  const data = parse(cargoTomlData);
+  // Extract the package version
+  const packageVersion = data.package && data.package.version;
+
+  if (packageVersion) {
+    console.log(`Package version extracted from Cargo.toml: ${packageVersion}`);
+  } else {
+    throw new Error(
+      `Failed to extract version from Cargo.toml, check Cargo.toml file for validity`,
+    );
+  }
+  return packageVersion;
+}
+
 async function run() {
   try {
     const prefix = core.getInput("prefix");
@@ -17,43 +34,32 @@ async function run() {
 
     // refs/tags/v1.2.3
 
-    const version = extractSemver(process.env.GITHUB_REF);
-    if (!version) {
-      // check if Cargo.toml exists
-      // if it does, extract version from it
-      // if it doesn't, throw error
-
-      const path = process.env.GITHUB_WORKSPACE + "/Cargo.toml";
-      console.log(`Checking if ${path} exists`);
-      const cargoTomlData = readFileSync(path, "utf8");
-      const data = parse(cargoTomlData);
-      // Extract the package version
-      const packageVersion = data.package && data.package.version;
-
-      if (packageVersion) {
-        console.log(
-          `Package version extracted from Cargo.toml: ${packageVersion}`,
-        );
-      } else {
-        throw new Error(
-          `Failed to extract version from GITHUB_REF: ${process.env.GITHUB_REF} or Cargo.toml`,
-        );
-      }
-
+    const versionFromRef = extractSemver(process.env.GITHUB_REF);
+    const versionFromCargoToml = extractFromCargoToml();
+    if (versionFromRef && versionFromRef !== versionFromCargoToml) {
       throw new Error(
-        `Failed to extract version from GITHUB_REF: ${process.env.GITHUB_REF}`,
+        `Version extracted from GITHUB_REF: ${versionFromRef} and Cargo.toml: ${versionFromCargoToml} are different`,
       );
-    } else {
-      console.log(`Version extracted from GITHUB_REF: ${version}`);
     }
 
-    console.log(`version=${version}`);
-    console.log(`version-ext=${version + suffix}`);
-    console.log(`version-full=${prefix + version + suffix}`);
+    let targetVersion = versionFromCargoToml;
+    let targetSuffix = suffix;
+    let targetPrefix = prefix;
+    if (versionFromRef) {
+      targetSuffix = process.env.GITHUB_REF?.split(versionFromRef)[1] || "";
+      targetPrefix =
+        (process.env.GITHUB_REF?.split(versionFromRef)[0] || "")
+          .split("/")
+          .pop() || "";
+    }
 
-    core.setOutput("version", version);
-    core.setOutput("version-ext", version + suffix);
-    core.setOutput("version-full", prefix + version + suffix);
+    console.log(`version=${targetVersion}`);
+    console.log(`version-ext=${targetVersion + targetSuffix}`);
+    console.log(`version-full=${targetPrefix + targetVersion + targetSuffix}`);
+
+    core.setOutput("version", targetVersion);
+    core.setOutput("version-ext", targetVersion + targetSuffix);
+    core.setOutput("version-full", targetPrefix + targetVersion + targetSuffix);
   } catch (error) {
     core.setFailed(`${error}`);
   }

@@ -47,41 +47,49 @@ function extractSemver(ref) {
     const match = ref.match(semverRegex);
     return match ? match[1] : null;
 }
+function extractFromCargoToml() {
+    const path = process.env.GITHUB_WORKSPACE + "/Cargo.toml";
+    const cargoTomlData = (0, fs_1.readFileSync)(path, "utf8");
+    const data = (0, toml_1.parse)(cargoTomlData);
+    // Extract the package version
+    const packageVersion = data.package && data.package.version;
+    if (packageVersion) {
+        console.log(`Package version extracted from Cargo.toml: ${packageVersion}`);
+    }
+    else {
+        throw new Error(`Failed to extract version from Cargo.toml, check Cargo.toml file for validity`);
+    }
+    return packageVersion;
+}
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
+        var _a, _b;
         try {
             const prefix = core.getInput("prefix");
             const suffix = core.getInput("suffix");
             // extract version from github ref
             // refs/tags/v1.2.3
-            const version = extractSemver(process.env.GITHUB_REF);
-            if (!version) {
-                // check if Cargo.toml exists
-                // if it does, extract version from it
-                // if it doesn't, throw error
-                const path = process.env.GITHUB_WORKSPACE + "/Cargo.toml";
-                console.log(`Checking if ${path} exists`);
-                const cargoTomlData = (0, fs_1.readFileSync)(path, "utf8");
-                const data = (0, toml_1.parse)(cargoTomlData);
-                // Extract the package version
-                const packageVersion = data.package && data.package.version;
-                if (packageVersion) {
-                    console.log(`Package version extracted from Cargo.toml: ${packageVersion}`);
-                }
-                else {
-                    throw new Error(`Failed to extract version from GITHUB_REF: ${process.env.GITHUB_REF} or Cargo.toml`);
-                }
-                throw new Error(`Failed to extract version from GITHUB_REF: ${process.env.GITHUB_REF}`);
+            const versionFromRef = extractSemver(process.env.GITHUB_REF);
+            const versionFromCargoToml = extractFromCargoToml();
+            if (versionFromRef && versionFromRef !== versionFromCargoToml) {
+                throw new Error(`Version extracted from GITHUB_REF: ${versionFromRef} and Cargo.toml: ${versionFromCargoToml} are different`);
             }
-            else {
-                console.log(`Version extracted from GITHUB_REF: ${version}`);
+            let targetVersion = versionFromCargoToml;
+            let targetSuffix = suffix;
+            let targetPrefix = prefix;
+            if (versionFromRef) {
+                targetSuffix = ((_a = process.env.GITHUB_REF) === null || _a === void 0 ? void 0 : _a.split(versionFromRef)[1]) || "";
+                targetPrefix =
+                    (((_b = process.env.GITHUB_REF) === null || _b === void 0 ? void 0 : _b.split(versionFromRef)[0]) || "")
+                        .split("/")
+                        .pop() || "";
             }
-            console.log(`version=${version}`);
-            console.log(`version-ext=${version + suffix}`);
-            console.log(`version-full=${prefix + version + suffix}`);
-            core.setOutput("version", version);
-            core.setOutput("version-ext", version + suffix);
-            core.setOutput("version-full", prefix + version + suffix);
+            console.log(`version=${targetVersion}`);
+            console.log(`version-ext=${targetVersion + targetSuffix}`);
+            console.log(`version-full=${targetPrefix + targetVersion + targetSuffix}`);
+            core.setOutput("version", targetVersion);
+            core.setOutput("version-ext", targetVersion + targetSuffix);
+            core.setOutput("version-full", targetPrefix + targetVersion + targetSuffix);
         }
         catch (error) {
             core.setFailed(`${error}`);
