@@ -49,6 +49,7 @@ function run() {
             core.setOutput("version", targetVersion);
             core.setOutput("version-ext", targetVersion + suffix);
             core.setOutput("version-full", prefix + targetVersion + suffix);
+            console.log(`Version: ${targetVersion}`);
         }
         catch (error) {
             core.setFailed(`${error}`);
