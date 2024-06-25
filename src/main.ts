@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
 import { readFileSync } from "fs";
-import { parse } from "toml";
+import { load } from "js-toml";
 
 function extractSemver(ref) {
   const semverRegex = /v?(\d+\.\d+\.\d+)/;
@@ -13,7 +13,7 @@ function extractFromCargoToml() {
   const cargoTomlData = readFileSync(path, "utf8");
   let data;
   try {
-    data = parse(cargoTomlData);
+    data = load(cargoTomlData);
   } catch (error) {
     throw new Error(`Failed to parse Cargo.toml file: ${error}`);
   }
