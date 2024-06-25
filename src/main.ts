@@ -71,7 +71,7 @@ async function run() {
     core.setOutput("version-suffix", targetSuffix);
     core.setOutput("prerelease", isPreRelease);
   } catch (error) {
-    core.setFailed(`${error}`);
+    core.setFailed(`Getting version failed with ${error}`);
   }
 }
 
