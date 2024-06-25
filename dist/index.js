@@ -50,7 +50,13 @@ function extractSemver(ref) {
 function extractFromCargoToml() {
     const path = process.env.GITHUB_WORKSPACE + "/Cargo.toml";
     const cargoTomlData = (0, fs_1.readFileSync)(path, "utf8");
-    const data = (0, toml_1.parse)(cargoTomlData);
+    let data;
+    try {
+        data = (0, toml_1.parse)(cargoTomlData);
+    }
+    catch (error) {
+        throw new Error(`Failed to parse Cargo.toml file: ${error}`);
+    }
     // Extract the package version
     const packageVersion = data.package && data.package.version;
     if (packageVersion) {
@@ -98,7 +104,7 @@ function run() {
             core.setOutput("prerelease", isPreRelease);
         }
         catch (error) {
-            core.setFailed(`${error}`);
+            core.setFailed(`Getting version failed with ${error}`);
         }
     });
 }
