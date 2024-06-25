@@ -11,7 +11,12 @@ function extractSemver(ref) {
 function extractFromCargoToml() {
   const path = process.env.GITHUB_WORKSPACE + "/Cargo.toml";
   const cargoTomlData = readFileSync(path, "utf8");
-  const data = parse(cargoTomlData);
+  let data;
+  try {
+    data = parse(cargoTomlData);
+  } catch (error) {
+    throw new Error(`Failed to parse Cargo.toml file: ${error}`);
+  }
   // Extract the package version
   const packageVersion = data.package && data.package.version;
 
